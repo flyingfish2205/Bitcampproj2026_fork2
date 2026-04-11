@@ -67,13 +67,28 @@ router.post('/', async (req, res) => {
 
   if (!name) return res.status(400).json({ error: 'name is required' })
 
+  // Enforce unique names (case-insensitive)
+  const { data: existing } = await supabase
+    .from('tamagotchis')
+    .select('id')
+    .ilike('name', name.trim())
+    .limit(1)
+
+  if (existing && existing.length > 0) {
+    return res.status(409).json({ error: `A JIT named "${name.trim()}" already exists` })
+  }
+
   const { data, error } = await supabase
     .from('tamagotchis')
-    .insert({ name, body_url, hat_url, face_url, neck_url, location_x, location_y })
+    .insert({ name: name.trim(), body_url, hat_url, face_url, neck_url, location_x, location_y })
     .select()
     .single()
 
   if (error) return res.status(500).json({ error: error.message })
+
+  // Broadcast to all connected clients so they can add the new JIT live
+  if (req.io) req.io.emit('jit_created', data)
+
   res.status(201).json(data)
 })
 
