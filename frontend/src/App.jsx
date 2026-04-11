@@ -62,7 +62,7 @@ const NECKS = [
   'Untitled92_20260411030214.png','Untitled92_20260411030215.png','Untitled92_20260411030216.png',
 ]
 const BODIES = [
-  'Untitled92_20260411030234.png','Untitled92_20260411030235.png','Untitled92_20260411030237.png',
+  'chubby.png','normal.png','skinny.png',
 ]
 
 function Window({ title, onClose, className = '', children, defaultX = 200, defaultY = 60 }) {
