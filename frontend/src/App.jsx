@@ -997,13 +997,13 @@ export default function App() {
 
       {/*Click-to-start splash*/}
       {!started && (
-        <div className="splash-overlay" onClick={() => setStarted(true)}>
+        <div className="splash-overlay">
           <div className="splash-dialog">
             <div className="w95-titlebar">
               <span className="w95-title">JIB_CAMP.exe</span>
             </div>
             <div className="splash-body">
-              <div className="splash-text">Click anywhere to start</div>
+              <div className="splash-text">Click OK to start</div>
               <button className="w95-btn splash-btn" onClick={() => setStarted(true)}>OK</button>
             </div>
           </div>
