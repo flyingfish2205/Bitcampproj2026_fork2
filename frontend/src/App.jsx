@@ -26,6 +26,19 @@ const IMG_TB_MUSIC     = 'http://localhost:3845/assets/cb75e9d3d8b4b4441e60a21e9
 const IMG_SEARCH_GLASS = 'http://localhost:3845/assets/f314bae801b5a54cab04e43e51956eec99fd795b.png'
 const IMG_CLOSE        = 'http://localhost:3845/assets/6923432ba0ba895f82ec519c1ecd93b00299c30f.png'
 
+// Music tracks
+const TRACKS = [
+  { file: 'A L E X - Ghosts - 8bitpixel lofi beatchillhop.mp3',       label: 'A L E X - Ghosts' },
+  { file: 'Midnight Bounce - Lakey Inspired 8bit pixel lo - fi.mp3',   label: 'Midnight Bounce' },
+  { file: 'Thelonious Monk round midnight (8-BIT in JAZZ).mp3',        label: 'Thelonious Monk - Round Midnight' },
+]
+
+function fmtTime(s) {
+  if (!s || isNaN(s)) return '0:00'
+  const m = Math.floor(s / 60)
+  return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+}
+
 // Avatar layer image lists (served from /public/)
 const HATS = [
   'Untitled92_20260411030109.png','Untitled92_20260411030111.png','Untitled92_20260411030112.png',
@@ -100,8 +113,26 @@ export default function App() {
   const [createName, setCreateName] = useState('')
   const [statusMsg, setStatusMsg] = useState('')
   const [camera, setCamera] = useState({ x: 0, y: 0 })
-  const [profileData, setProfileData] = useState(null) // { jit, details, activities, x, y }
+  const [profileData, setProfileData] = useState(null)
   const cameraRef = useRef({ x: 0, y: 0 })
+  const [started, setStarted] = useState(false)
+
+  // Music player
+  const [musicOpen, setMusicOpen] = useState(false)
+  const [musicWinPos, setMusicWinPos] = useState({ x: 400, y: 300 })
+  const [trackIdx, setTrackIdx] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [volume, setVolume] = useState(0.7)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const audioRef = useRef(null)
+
+  // Intro animation state
+  // phases: 'start' → 'moving' → 'clicking' → 'opening' → 'done'
+  const [introPhase, setIntroPhase] = useState('start')
+  const [cursorStart, setCursorStart] = useState({ x: 0, y: 0 })
+  const [iconCenter, setIconCenter] = useState({ x: 0, y: 0 })
+  const jitsIconRef = useRef(null)
 
   // Avatar layer indices (-1 = none for optional layers)
   const [hatIdx, setHatIdx] = useState(-1)
@@ -149,6 +180,56 @@ export default function App() {
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [])
+
+  // Audio: load new track whenever trackIdx changes
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.src = `/bgmusic/${encodeURIComponent(TRACKS[trackIdx].file)}`
+    audio.volume = volume
+    audio.load()
+    if (isPlaying) audio.play().catch(() => {})
+  }, [trackIdx]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Audio: sync play/pause
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (isPlaying) audio.play().catch(() => setIsPlaying(false))
+    else audio.pause()
+  }, [isPlaying])
+
+  // Audio: sync volume
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume
+  }, [volume])
+
+  // Intro animation — runs once after the user's first click (started = true)
+  useEffect(() => {
+    if (!started) return
+
+    const rect = jitsIconRef.current?.getBoundingClientRect()
+    if (rect) setIconCenter({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+    setCursorStart({ x: window.innerWidth * 0.62, y: window.innerHeight * 0.55 })
+
+    const clickSfx = new Audio('/soundeffects/Mouse Click Sound Effect.mp3')
+
+    const t1 = setTimeout(() => setIntroPhase('moving'),   350)
+    const t2 = setTimeout(() => {
+      setIntroPhase('clicking')
+      clickSfx.play().catch(() => {})
+    }, 1750)
+    const t3 = setTimeout(() => {
+      setIntroPhase('opening')
+      setActiveWindow('jitcamp')
+    }, 1970)
+    const t4 = setTimeout(() => {
+      setIntroPhase('done')
+      setIsPlaying(true)
+    }, 2400)
+
+    return () => [t1, t2, t3, t4].forEach(clearTimeout)
+  }, [started])
 
   // Socket.io — real-time activity feed + new JIT broadcasts
   useEffect(() => {
@@ -394,7 +475,13 @@ export default function App() {
   }
 
   return (
-    <div className="desktop" style={{ backgroundImage: `url(${IMG_BG})` }}>
+    <div
+      className="desktop"
+      style={{
+        backgroundImage: `url(${IMG_BG})`,
+        cursor: introPhase !== 'done' ? 'none' : undefined,
+      }}
+    >
 
       {/* ── Desktop Icons ── */}
       <div className="desktop-icons">
@@ -406,7 +493,7 @@ export default function App() {
           <div className="icon-img"><img src={IMG_ICON_CREATE} alt="Create" /></div>
           <span className="icon-label">CREATE</span>
         </button>
-        <button className="desktop-icon" onClick={() => open('jitcamp')}>
+        <button className="desktop-icon" ref={jitsIconRef} onClick={() => open('jitcamp')}>
           <div className="icon-img"><img src={IMG_ICON_JITS} alt="Jits" /></div>
           <span className="icon-label">JITS</span>
         </button>
@@ -600,6 +687,38 @@ export default function App() {
         </Window>
       )}
 
+      {/* ── Click-to-start splash ── */}
+      {!started && (
+        <div className="splash-overlay" onClick={() => setStarted(true)}>
+          <div className="splash-dialog">
+            <div className="w95-titlebar">
+              <span className="w95-title">JIT_CAMP.exe</span>
+            </div>
+            <div className="splash-body">
+              <div className="splash-text">Click anywhere to start</div>
+              <button className="w95-btn splash-btn" onClick={() => setStarted(true)}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Intro cursor overlay ── */}
+      {introPhase !== 'done' && (
+        <img
+          src="/cursor.png"
+          alt=""
+          className={[
+            'intro-cursor',
+            introPhase === 'moving'   ? 'intro-cursor-moving'   : '',
+            introPhase === 'clicking' ? 'intro-cursor-clicking' : '',
+          ].join(' ')}
+          style={{
+            left: introPhase === 'start' ? cursorStart.x : iconCenter.x - 6,
+            top:  introPhase === 'start' ? cursorStart.y : iconCenter.y - 6,
+          }}
+        />
+      )}
+
       {/* ── JIT Profile Window ── */}
       {profileData && (
         <Window
@@ -645,6 +764,94 @@ export default function App() {
         </Window>
       )}
 
+      {/* ── Music Player ── */}
+      {musicOpen && (
+        <Window
+          title="MUSIC.exe"
+          onClose={() => setMusicOpen(false)}
+          className="music-win"
+          defaultX={musicWinPos.x}
+          defaultY={musicWinPos.y}
+        >
+          <div className="music-content">
+            {/* Now playing */}
+            <div className="music-now-playing w95-inset-box">
+              <div className="music-np-label">NOW PLAYING</div>
+              <div className="music-np-track">{TRACKS[trackIdx].label}</div>
+              <div className="music-np-time">{fmtTime(currentTime)} / {fmtTime(duration)}</div>
+            </div>
+
+            {/* Seek bar */}
+            <input
+              type="range"
+              className="music-seek"
+              min={0}
+              max={duration || 1}
+              step={0.1}
+              value={currentTime}
+              onChange={e => {
+                const t = +e.target.value
+                setCurrentTime(t)
+                if (audioRef.current) audioRef.current.currentTime = t
+              }}
+            />
+
+            {/* Track list */}
+            <div className="music-tracklist w95-inset-box">
+              {TRACKS.map((t, i) => (
+                <div
+                  key={i}
+                  className={`music-track-row${i === trackIdx ? ' music-track-active' : ''}`}
+                  onClick={() => { setTrackIdx(i); setIsPlaying(true) }}
+                >
+                  <span className="music-track-indicator">{i === trackIdx ? '►' : ' '}</span>
+                  <span>{t.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Transport + volume */}
+            <div className="music-controls">
+              <button
+                className="w95-btn music-ctrl-btn"
+                onClick={() => { setTrackIdx(i => (i - 1 + TRACKS.length) % TRACKS.length); setIsPlaying(true) }}
+                title="Previous"
+              >|◄</button>
+              <button
+                className="w95-btn music-ctrl-btn music-playpause"
+                onClick={() => setIsPlaying(v => !v)}
+                title={isPlaying ? 'Pause' : 'Play'}
+              >{isPlaying ? '‖' : '►'}</button>
+              <button
+                className="w95-btn music-ctrl-btn"
+                onClick={() => { setTrackIdx(i => (i + 1) % TRACKS.length); setIsPlaying(true) }}
+                title="Next"
+              >►|</button>
+              <div className="music-vol-row">
+                <span className="music-vol-label">VOL</span>
+                <input
+                  type="range"
+                  className="music-volume"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={volume}
+                  onChange={e => setVolume(+e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </Window>
+      )}
+
+      {/* Persistent audio element — always mounted so music survives window close */}
+      <audio
+        ref={audioRef}
+        onTimeUpdate={e => setCurrentTime(e.target.currentTime)}
+        onLoadedMetadata={e => setDuration(e.target.duration)}
+        onEnded={() => setTrackIdx(i => (i + 1) % TRACKS.length)}
+      />
+
       {/* ── Taskbar ── */}
       <div className="taskbar">
         <div className="taskbar-left">
@@ -658,7 +865,13 @@ export default function App() {
           <button className="tb-icon-btn" title="Favicon">
             <img src={IMG_TB_FAVICON} alt="favicon" className="tb-img" />
           </button>
-          <button className="tb-icon-btn" title="Music">
+          <button className="tb-icon-btn" title="Music" onClick={() => {
+            if (!musicOpen) {
+              setMusicWinPos({ x: Math.max(10, window.innerWidth - 310), y: Math.max(10, window.innerHeight - 330) })
+              if (!isPlaying) setIsPlaying(true)
+            }
+            setMusicOpen(v => !v)
+          }}>
             <img src={IMG_TB_MUSIC} alt="music" className="tb-img" />
           </button>
           {(activeWindow === 'jitcamp' || activeWindow === 'search') && (
