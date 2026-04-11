@@ -30,6 +30,7 @@ const TRACKS = [
   { file: 'A L E X - Ghosts - 8bitpixel lofi beatchillhop.mp3',       label: 'A L E X - Ghosts' },
   { file: 'Midnight Bounce - Lakey Inspired 8bit pixel lo - fi.mp3',   label: 'Midnight Bounce' },
   { file: 'Thelonious Monk round midnight (8-BIT in JAZZ).mp3',        label: 'Thelonious Monk - Round Midnight' },
+  { file: 'Spring colors -living mix.mp3',        label: 'Takeshi Abo - Spring Colors Living Mix' }
 ]
 
 function fmtTime(s) {
