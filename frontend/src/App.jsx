@@ -663,7 +663,6 @@ export default function App() {
       const created = await res.json()
       setStatusMsg(`${created.name} joined the camp!`)
       setCreateName('')
-      setJits(prev => [...prev, created])
     } catch {
       setStatusMsg('Error creating JIT.')
     }
@@ -909,7 +908,7 @@ export default function App() {
       )}
 
       {/*Intro cursor overlay*/}
-      {introPhase !== 'done' && (
+      {started && introPhase !== 'done' && (
         <img
           src="/cursor.png"
           alt=""
