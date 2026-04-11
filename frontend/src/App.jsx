@@ -265,9 +265,9 @@ export default function App() {
 
   async function savePrinterPng() {
     const name = printerJitName.trim()
-    if (!name) { setPrinterStatus('Enter a JIT name first.'); return }
+    if (!name) { setPrinterStatus('Enter a JIB name first.'); return }
     const jit = jits.find(j => j.name.toLowerCase() === name.toLowerCase())
-    if (!jit) { setPrinterStatus(`No JIT named "${name}" found.`); return }
+    if (!jit) { setPrinterStatus(`No JIB named "${name}" found.`); return }
 
     setPrinterStatus('Generating...')
     const SIZE = 256
@@ -759,7 +759,7 @@ export default function App() {
       setStatusMsg(`${created.name} joined the camp!`)
       setCreateName('')
     } catch {
-      setStatusMsg('Error creating JIT.')
+      setStatusMsg('Error creating JIB.')
     }
   }
 
@@ -790,15 +790,15 @@ export default function App() {
           <span className="icon-label">CREATE</span>
         </button>
         <button className="desktop-icon" ref={jitsIconRef} onClick={() => open('jitcamp')}>
-          <div className="icon-img"><img src={IMG_ICON_JITS} alt="Jits" /></div>
-          <span className="icon-label">JITS</span>
+          <div className="icon-img"><img src={IMG_ICON_JITS} alt="Jibs" /></div>
+          <span className="icon-label">JIBS</span>
         </button>
       </div>
 
       {/*JIT_CAMP.exe*/}
       {(activeWindow === 'jitcamp' || activeWindow === 'search') && (
         <Window
-          title="JIT_CAMP.exe"
+          title="JIB_CAMP.exe"
           onClose={() => { setActiveWindow(null); setProfileData(null) }}
           className="jitcamp-win"
           defaultX={170}
@@ -890,7 +890,7 @@ export default function App() {
                     autoFocus
                     value={searchQuery}
                     onChange={onSearchChange}
-                    placeholder="Search JITs..."
+                    placeholder="Search JIBs..."
                     className="w95-text-input"
                   />
                   <button type="button" className="search-x-btn" onClick={() => setActiveWindow('jitcamp')}>✕</button>
@@ -899,7 +899,7 @@ export default function App() {
                   {searchResults === null ? (
                     <div className="w95-empty">Type a name to search</div>
                   ) : searchResults.length === 0 ? (
-                    <div className="w95-empty">No JIT found with that name.</div>
+                    <div className="w95-empty">No JIB found with that name.</div>
                   ) : (
                     searchResults.map(jit => (
                       <div key={jit.id} className="search-result-row" onClick={() => panToJit(jit)}>
@@ -918,7 +918,7 @@ export default function App() {
       {/*JIT_CREATOR.exe*/}
       {activeWindow === 'creator' && (
         <Window
-          title="JIT_CREATOR.exe"
+          title="JIB_CREATOR.exe"
           onClose={() => setActiveWindow(null)}
           className="creator-win"
           defaultX={160}
@@ -960,7 +960,7 @@ export default function App() {
                   value={createName}
                   onChange={e => setCreateName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleCreate(e)}
-                  placeholder="Name your Jit!"
+                  placeholder="Name your Jib!"
                   className="creator-name-input"
                 />
                 <button className="creator-dice-btn" onClick={randomize} title="Randomize">
@@ -969,7 +969,7 @@ export default function App() {
               </div>
               {statusMsg && <div className="creator-status">{statusMsg}</div>}
               <button className="w95-btn creator-create-btn" onClick={handleCreate}>
-                CREATE JIT
+                CREATE JIB
               </button>
             </div>
 
@@ -1000,7 +1000,7 @@ export default function App() {
         <div className="splash-overlay" onClick={() => setStarted(true)}>
           <div className="splash-dialog">
             <div className="w95-titlebar">
-              <span className="w95-title">JIT_CAMP.exe</span>
+              <span className="w95-title">JIB_CAMP.exe</span>
             </div>
             <div className="splash-body">
               <div className="splash-text">Click anywhere to start</div>
@@ -1167,14 +1167,14 @@ export default function App() {
         >
           <div className="printer-content">
             <div className="printer-label w95-inset-box">
-              <div className="printer-header-text">JIT PHOTO PRINTER</div>
-              <div className="printer-sub-text">Enter a JIT name to save its sprite as a PNG file.</div>
+              <div className="printer-header-text">JIB PHOTO PRINTER</div>
+              <div className="printer-sub-text">Enter a JIB name to save its sprite as a PNG file.</div>
             </div>
             <div className="printer-input-row">
               <input
                 className="printer-input w95-inset-box"
                 type="text"
-                placeholder="JIT name..."
+                placeholder="JIB name..."
                 value={printerJitName}
                 onChange={onPrinterNameChange}
                 onKeyDown={e => { if (e.key === 'Enter') savePrinterPng() }}
@@ -1215,8 +1215,8 @@ export default function App() {
         >
           <div className="directory-content">
             <div className="printer-label w95-inset-box">
-              <div className="printer-header-text">JIT DIRECTORY</div>
-              <div className="printer-sub-text">{jits.length} JIT{jits.length !== 1 ? 'S' : ''} registered</div>
+              <div className="printer-header-text">JIB DIRECTORY</div>
+              <div className="printer-sub-text">{jits.length} JIB{jits.length !== 1 ? 'S' : ''} registered</div>
             </div>
             <div className="search-bar-row directory-search-bar">
               <div className="search-glass-icon">
@@ -1225,7 +1225,7 @@ export default function App() {
               <input
                 className="w95-text-input"
                 type="text"
-                placeholder="Search JITs..."
+                placeholder="Search JIBs..."
                 value={directorySearch}
                 onChange={e => setDirectorySearch(e.target.value)}
               />
