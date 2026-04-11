@@ -108,26 +108,27 @@ function App() {
         </div>
       </header>
 
-      <section className="action-bar">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`nav-card ${view === item.id ? 'active' : ''}`}
-            onClick={() => setView(item.id)}
-          >
-            <span className="icon-placeholder" aria-hidden="true">
-              {item.label.charAt(0)}
-            </span>
-            <div>
-              <strong>{item.label}</strong>
-              <span>{item.description}</span>
-            </div>
-          </button>
-        ))}
-      </section>
+      <div className="main-layout">
+        <section className="action-bar">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`nav-card ${view === item.id ? 'active' : ''}`}
+              onClick={() => setView(item.id)}
+            >
+              <span className="icon-placeholder" aria-hidden="true">
+                {item.label.charAt(0)}
+              </span>
+              <div>
+                <strong>{item.label}</strong>
+                <span>{item.description}</span>
+              </div>
+            </button>
+          ))}
+        </section>
 
-      <section className="panel">
+        <section className="panel">
         {error && <div className="status error">{error}</div>}
         {message && <div className="status success">{message}</div>}
 
@@ -199,6 +200,7 @@ function App() {
           </div>
         )}
       </section>
+      </div>
     </main>
   )
 }

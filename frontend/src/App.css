@@ -27,7 +27,7 @@ button {
 }
 
 .app-shell {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 32px 24px 48px;
 }
@@ -36,7 +36,6 @@ button {
   display: grid;
   gap: 12px;
   padding: 24px;
-  border-radius: 24px;
   background: white;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
   margin-bottom: 24px;
@@ -60,11 +59,19 @@ button {
   color: #475569;
 }
 
-.action-bar {
+.main-layout {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .nav-card {
@@ -73,7 +80,7 @@ button {
   gap: 16px;
   padding: 20px;
   border: 1px solid #dbeafe;
-  border-radius: 18px;
+  border-radius: 0;
   background: white;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   text-align: left;
@@ -89,7 +96,7 @@ button {
 .icon-placeholder {
   width: 52px;
   height: 52px;
-  border-radius: 18px;
+  border-radius: 0;
   display: grid;
   place-items: center;
   background: #e0e7ff;
@@ -116,7 +123,7 @@ button {
 
 .panel-card {
   padding: 24px;
-  border-radius: 24px;
+  border-radius: 0;
   background: white;
   border: 1px solid #e2e8f0;
   box-shadow: 0 16px 35px rgba(15, 23, 42, 0.05);
@@ -152,7 +159,7 @@ button {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid #cbd5e1;
-  border-radius: 14px;
+  border-radius: 0;
   background: #f8fafc;
   color: #111827;
 }
@@ -160,7 +167,7 @@ button {
 .primary-button,
 .secondary-button {
   border: none;
-  border-radius: 14px;
+  border-radius: 0;
   padding: 14px 18px;
   font-weight: 600;
 }
@@ -221,7 +228,10 @@ button {
 }
 
 @media (max-width: 840px) {
+  .main-layout {
+    display: block;
+  }
   .action-bar {
-    grid-template-columns: 1fr;
+    max-width: 100%;
   }
 }
