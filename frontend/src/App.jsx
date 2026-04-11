@@ -126,6 +126,11 @@ export default function App() {
   const [printerJitName, setPrinterJitName] = useState('')
   const [printerStatus, setPrinterStatus] = useState('')
   const [printerSuggestions, setPrinterSuggestions] = useState(null)
+
+  // JIT Directory window
+  const [directoryOpen, setDirectoryOpen] = useState(false)
+  const [directoryWinPos, setDirectoryWinPos] = useState({ x: 200, y: 200 })
+  const [directorySearch, setDirectorySearch] = useState('')
   const [trackIdx, setTrackIdx] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(0.7)
@@ -955,6 +960,54 @@ export default function App() {
         </Window>
       )}
 
+      {/* ── JIT Directory ── */}
+      {directoryOpen && (
+        <Window
+          title="DIRECTORY.exe"
+          onClose={() => { setDirectoryOpen(false); setDirectorySearch('') }}
+          className="directory-win"
+          defaultX={directoryWinPos.x}
+          defaultY={directoryWinPos.y}
+        >
+          <div className="directory-content">
+            <div className="printer-label w95-inset-box">
+              <div className="printer-header-text">JIT DIRECTORY</div>
+              <div className="printer-sub-text">{jits.length} JIT{jits.length !== 1 ? 'S' : ''} registered</div>
+            </div>
+            <div className="search-bar-row directory-search-bar">
+              <div className="search-glass-icon">
+                <img src={IMG_SEARCH_GLASS} alt="" />
+              </div>
+              <input
+                className="w95-text-input"
+                type="text"
+                placeholder="Search JITs..."
+                value={directorySearch}
+                onChange={e => setDirectorySearch(e.target.value)}
+              />
+              {directorySearch && (
+                <button type="button" className="search-x-btn" onClick={() => setDirectorySearch('')}>✕</button>
+              )}
+            </div>
+            <div className="w95-inset-box directory-list">
+              {jits
+                .filter(j => j.name.toLowerCase().includes(directorySearch.trim().toLowerCase()))
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(jit => (
+                  <div key={jit.id} className="search-result-row directory-row">
+                    <span className="feed-bullet">▪</span>
+                    <span>{jit.name}</span>
+                  </div>
+                ))
+              }
+              {jits.filter(j => j.name.toLowerCase().includes(directorySearch.trim().toLowerCase())).length === 0 && (
+                <div className="w95-empty">No JITs found.</div>
+              )}
+            </div>
+          </div>
+        </Window>
+      )}
+
       {/* Persistent audio element — always mounted so music survives window close */}
       <audio
         ref={audioRef}
@@ -966,11 +1019,11 @@ export default function App() {
       {/* ── Taskbar ── */}
       <div className="taskbar">
         <div className="taskbar-left">
-          <button className="tb-icon-btn" title="Home">
+          <button className="tb-icon-btn" data-label="Home" title="Home">
             <img src={IMG_TB_HOME} alt="home" className="tb-img" />
           </button>
           <div className="tb-sep" />
-          <button className="tb-icon-btn" title="Print" onClick={() => {
+          <button className="tb-icon-btn" data-label="Print" title="Print" onClick={() => {
             if (!printerOpen) {
               setPrinterWinPos({ x: Math.max(10, window.innerWidth / 2 - 130), y: Math.max(10, window.innerHeight - 280) })
               setPrinterStatus('')
@@ -979,10 +1032,16 @@ export default function App() {
           }}>
             <img src={IMG_TB_PRINTER} alt="print" className="tb-img" />
           </button>
-          <button className="tb-icon-btn" title="Favicon">
-            <img src={IMG_TB_FAVICON} alt="favicon" className="tb-img" />
+          <button className="tb-icon-btn" data-label="Directory" title="Directory" onClick={() => {
+            if (!directoryOpen) {
+              setDirectoryWinPos({ x: Math.max(10, window.innerWidth / 2 - 130), y: Math.max(10, window.innerHeight - 340) })
+              setDirectorySearch('')
+            }
+            setDirectoryOpen(v => !v)
+          }}>
+            <img src={IMG_TB_FAVICON} alt="directory" className="tb-img" />
           </button>
-          <button className="tb-icon-btn" title="Music" onClick={() => {
+          <button className="tb-icon-btn" data-label="Music" title="Music" onClick={() => {
             if (!musicOpen) {
               setMusicWinPos({ x: Math.max(10, window.innerWidth - 310), y: Math.max(10, window.innerHeight - 330) })
               if (!isPlaying) setIsPlaying(true)

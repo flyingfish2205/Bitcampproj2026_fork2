@@ -593,6 +593,30 @@ body {
   justify-content: center;
   padding: 0;
   flex-shrink: 0;
+  position: relative;
+}
+
+.tb-icon-btn::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffcc;
+  border: 1px solid #7a7a7a;
+  color: #000;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 2px 5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 9999;
+}
+
+.tb-icon-btn:hover::after {
+  opacity: 1;
 }
 
 .tb-icon-btn:active {
@@ -817,6 +841,38 @@ body {
   width: 260px;
   z-index: 150;
 }
+
+.directory-win {
+  width: 260px;
+  z-index: 150;
+}
+
+.directory-content {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.directory-search-bar {
+  margin-bottom: 0;
+}
+
+.directory-list .search-result-row {
+  cursor: default;
+  pointer-events: none;
+}
+
+.directory-list .search-result-row:hover {
+  background: none;
+}
+
+.directory-list {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+}
+
 
 .printer-content {
   padding: 6px;
