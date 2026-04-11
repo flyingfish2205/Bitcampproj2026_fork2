@@ -10,11 +10,13 @@ import uploadRouter from './routes/upload.js'
 
 const app = express()
 const httpServer = createServer(app)
+const devOrigin = /^http:\/\/localhost:\d+$/
+
 const io = new Server(httpServer, {
-  cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
+  cors: { origin: devOrigin, methods: ['GET', 'POST'] }
 })
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({ origin: devOrigin }))
 app.use(express.json())
 
 // Attach io to every request so routes can broadcast
