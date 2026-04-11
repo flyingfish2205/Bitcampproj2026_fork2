@@ -12,19 +12,18 @@ const WORLD_W    = WORLD_COLS * TILE_SIZE   // 6 000 px
 const WORLD_H    = WORLD_ROWS * TILE_SIZE   // 5 000 px
 const LAND_TILES = ['split_1.png', 'split_2.png', 'split_3.png', 'split_4.png']
 
-// Figma asset URLs (served by Figma MCP desktop server)
-const IMG_BG           = 'http://localhost:3845/assets/8bcda688fa73379f3451c159e120afbcb5a00aa2.png'
-const IMG_ICON_SEARCH  = 'http://localhost:3845/assets/ffb2db3a8000e067d0e17680f68bd282983f5c28.png'
-const IMG_ICON_CREATE  = 'http://localhost:3845/assets/971c7aa8a6fe7abab79ad54734139399a6eb5c94.png'
-const IMG_ICON_JITS    = 'http://localhost:3845/assets/22eedd3bcbdc34d661ac313bc55be6535bf0b8db.png'
-const IMG_AVATAR       = 'http://localhost:3845/assets/d36ef49c1584ec1b24a8e59963cb98d7ac481fee.png'
-const IMG_DICE         = 'http://localhost:3845/assets/005c1fc54bd6887b555a3fc79fa4e46b6c227d10.png'
-const IMG_TB_HOME      = 'http://localhost:3845/assets/4b53ce6d09feffb344771490ab6f08b8cfb7c270.png'
-const IMG_TB_PRINTER   = 'http://localhost:3845/assets/93f31b5e097cb3753866508c105a45fe5594ee67.png'
-const IMG_TB_FAVICON   = 'http://localhost:3845/assets/8472ac418b4cef1b82fd62d9559e6fed8b058aeb.png'
-const IMG_TB_MUSIC     = 'http://localhost:3845/assets/cb75e9d3d8b4b4441e60a21e9a2796b8ab134126.png'
-const IMG_SEARCH_GLASS = 'http://localhost:3845/assets/f314bae801b5a54cab04e43e51956eec99fd795b.png'
-const IMG_CLOSE        = 'http://localhost:3845/assets/6923432ba0ba895f82ec519c1ecd93b00299c30f.png'
+const IMG_BG           = '/figma-assets/bg.png'
+const IMG_ICON_SEARCH  = '/figma-assets/icon-search.png'
+const IMG_ICON_CREATE  = '/figma-assets/icon-create.png'
+const IMG_ICON_JITS    = '/figma-assets/icon-jits.png'
+const IMG_AVATAR       = '/figma-assets/avatar.png'
+const IMG_DICE         = '/figma-assets/dice.png'
+const IMG_TB_HOME      = '/figma-assets/tb-home.png'
+const IMG_TB_PRINTER   = '/figma-assets/tb-printer.png'
+const IMG_TB_FAVICON   = '/figma-assets/tb-favicon.png'
+const IMG_TB_MUSIC     = '/figma-assets/tb-music.png'
+const IMG_SEARCH_GLASS = '/figma-assets/search-glass.png'
+const IMG_CLOSE        = '/figma-assets/close.png'
 
 // Music tracks
 const TRACKS = [
