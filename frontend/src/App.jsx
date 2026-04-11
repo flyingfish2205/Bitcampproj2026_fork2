@@ -315,6 +315,9 @@ export default function App() {
   // Keep refs in sync for use in async callbacks / event handlers
   useEffect(() => { jitPositionsRef.current = jitPositions }, [jitPositions])
   useEffect(() => { cameraRef.current = camera }, [camera])
+  useEffect(() => {
+    if (activeWindow !== 'jitcamp' && activeWindow !== 'search') setProfileData(null)
+  }, [activeWindow])
 
   function randomVelocity() {
     const angle = Math.random() * Math.PI * 2
@@ -571,7 +574,7 @@ export default function App() {
       {(activeWindow === 'jitcamp' || activeWindow === 'search') && (
         <Window
           title="JIT_CAMP.exe"
-          onClose={() => setActiveWindow(null)}
+          onClose={() => { setActiveWindow(null); setProfileData(null) }}
           className="jitcamp-win"
           defaultX={170}
           defaultY={10}
@@ -1021,6 +1024,7 @@ export default function App() {
         <div className="taskbar-left">
           <button className="tb-icon-btn" data-label="Home" title="Home" onClick={() => {
             setActiveWindow(null)
+            setProfileData(null)
             setMusicOpen(false)
             setPrinterOpen(false)
             setDirectoryOpen(false)
@@ -1058,7 +1062,7 @@ export default function App() {
           {(activeWindow === 'jitcamp' || activeWindow === 'search') && (
             <>
               <div className="tb-sep" />
-              <button className="tb-task-btn" onClick={() => setActiveWindow(null)}>JIT_CAMP.exe</button>
+              <button className="tb-task-btn" onClick={() => { setActiveWindow(null); setProfileData(null) }}>JIT_CAMP.exe</button>
             </>
           )}
           {activeWindow === 'creator' && (
