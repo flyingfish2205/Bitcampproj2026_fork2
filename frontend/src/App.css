@@ -1218,3 +1218,43 @@ body {
   line-height: 1.5;
   text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
+
+/* ═══════════════════════════════════════════════════════
+   CAMP SCENE (world centre)
+═══════════════════════════════════════════════════════ */
+.camp-container {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.camp-ground {
+  display: block;
+  width: 700px;
+  height: auto;
+}
+
+.camp-tent {
+  position: absolute;
+  width: 500px;
+  height: auto;
+  bottom: 28%;
+}
+
+.camp-tent-left {
+  right: calc(50% - 120px);
+}
+
+.camp-tent-right {
+  left: calc(50% + 20px);
+}
+
+.camp-campfire {
+  position: absolute;
+  width: 800px;
+  height: auto;
+  left: calc(50% + 60px);
+  top: 50%;
+  transform: translate(-50%, -50%);
+}

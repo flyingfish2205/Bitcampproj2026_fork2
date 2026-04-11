@@ -1,16 +1,62 @@
-# React + Vite
+# JIT Camp
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A virtual campground where JITs (your characters) roam, hang out, and make memories together. Features a live activity feed, polaroid photo viewer, avatar creator, and a Windows 95-styled UI.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+/
+├── backend/    # Express + Socket.io API server
+└── frontend/   # React + Vite single-page app
+```
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+You need two terminals — one for the backend, one for the frontend.
 
-## Expanding the ESLint configuration
+### 1. Backend
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cd backend
+npm install
+cp .env.example .env   # fill in your Supabase credentials
+npm run dev
+```
+
+Runs on `http://localhost:3001`.
+
+### 2. Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env   # fill in your Supabase credentials + confirm API base URL
+npm run dev
+```
+
+Opens at `http://localhost:5173`.
+
+## Environment Variables
+
+Both packages have a `.env.example` file. Copy it to `.env` and fill in the values:
+
+**`backend/.env`**
+```
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SECRET_KEY=your_supabase_secret_key_here
+PORT=3001
+```
+
+**`frontend/.env`**
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key_here
+VITE_API_BASE=http://localhost:3001
+```
+
+Supabase keys are found in your project dashboard under **Project Settings → API**.
+
+## Further Details
+
+- See `backend/README.md` for API routes and backend dependency details.
+- See `frontend/README.md` for frontend build commands and dependency details.

@@ -12,6 +12,10 @@ const WORLD_W    = WORLD_COLS * TILE_SIZE   // 6 000 px
 const WORLD_H    = WORLD_ROWS * TILE_SIZE   // 5 000 px
 const LAND_TILES = ['split_1.png', 'split_2.png', 'split_3.png', 'split_4.png']
 
+// Camp is fixed at the centre of the world
+const CAMP_X = WORLD_W / 2   // 3 000 px
+const CAMP_Y = WORLD_H / 2   // 2 500 px
+
 const IMG_BG           = '/figma-assets/bg.png'
 const IMG_ICON_SEARCH  = '/figma-assets/icon-search.png'
 const IMG_ICON_CREATE  = '/figma-assets/icon-create.png'
@@ -112,7 +116,7 @@ const ACTIVITY_DEFS = [
   { type: 'pair', polaroid: '/polaroids/Flowers_Polaroid.png',         text: p => `${p[0].name} and ${p[1].name} are hanging out by the flowers` },
   { type: 'pair', polaroid: '/polaroids/Beach_Polaroid.png',           text: p => `${p[0].name} and ${p[1].name} are skipping rocks together` },
   // Group
-  { type: 'group', polaroid: '/polaroids/Campfire_Polaroid.png',       text: p => `${listNames(p)} are making smores together` },
+  { type: 'group', polaroid: '/polaroids/Campfire_Polaroid.png', gather: 'campfire', text: p => `${listNames(p)} are making smores together` },
   { type: 'group', polaroid: '/polaroids/Beach_Polaroid.png',          text: p => `${listNames(p)} are having a beach day` },
   { type: 'group', polaroid: '/polaroids/Picnic_Table_Polaroid.png',   text: p => `${listNames(p)} are having a group picnic` },
   { type: 'group', polaroid: '/polaroids/Fishing_Polaroid.png',        text: p => `${listNames(p)} are fishing together` },
@@ -136,6 +140,7 @@ function buildActivity(jits) {
     description: def.text(participants),
     polaroid: def.polaroid,
     participants,
+    gather: def.gather || null,
   }
 }
 
@@ -220,6 +225,8 @@ export default function App() {
   const jitsIconRef = useRef(null)
   const jitsRef = useRef([])
   const pendingEchoesRef = useRef({})
+  const gatheredPositionsRef = useRef({})
+  const campHangersRef = useRef({})
 
   // Polaroid viewer
   const [polaroidActivity, setPolaroidActivity] = useState(null)
@@ -388,8 +395,8 @@ export default function App() {
             const vpW = viewportRef.current.offsetWidth
             const vpH = viewportRef.current.offsetHeight
             setCamera({
-              x: Math.min(0, Math.max(-(WORLD_W - vpW), -WORLD_W / 2 + vpW / 2)),
-              y: Math.min(0, Math.max(-(WORLD_H - vpH), -WORLD_H / 2 + vpH / 2)),
+              x: Math.min(0, Math.max(-(WORLD_W - vpW), -CAMP_X + vpW / 2)),
+              y: Math.min(0, Math.max(-(WORLD_H - vpH), -CAMP_Y + vpH / 2)),
             })
           }
         }, 30)
@@ -435,6 +442,56 @@ export default function App() {
     }
   }
 
+  function assignCampHangers() {
+    const available = jitsRef.current.filter(j => !gatheredPositionsRef.current[j.id])
+    if (!available.length) return
+    const count = available.length === 1 ? 1 : Math.random() < 0.5 ? 1 : 2
+    const picked = pickRandom(available, count)
+    const hangers = {}
+    picked.forEach((jit, i) => {
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 1.2
+      const radius = 30 + Math.random() * 30
+      hangers[jit.id] = {
+        x: CAMP_X + Math.cos(angle) * radius,
+        y: CAMP_Y + Math.sin(angle) * radius,
+      }
+    })
+    campHangersRef.current = hangers
+  }
+
+  // Swap camp hangers every 30–60 s
+  useEffect(() => {
+    let timer
+    const swap = () => {
+      assignCampHangers()
+      timer = setTimeout(swap, 30000 + Math.random() * 30000)
+    }
+    timer = setTimeout(swap, 4000) // first assignment after jits have loaded
+    return () => clearTimeout(timer)
+  }, [])
+
+  function triggerCampfireGather(participants) {
+    const n = participants.length
+    const radius = 95
+    const gathered = {}
+    participants.forEach((jit, i) => {
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2
+      gathered[jit.id] = {
+        x: CAMP_X + Math.cos(angle) * radius,
+        y: CAMP_Y + Math.sin(angle) * radius,
+      }
+    })
+    gatheredPositionsRef.current = gathered
+    // Remove gathered JITs from camp hangers so they don't fight over position
+    const hangers = { ...campHangersRef.current }
+    participants.forEach(j => delete hangers[j.id])
+    campHangersRef.current = hangers
+    setTimeout(() => {
+      gatheredPositionsRef.current = {}
+      assignCampHangers() // re-assign hangers now that smores is over
+    }, 20000)
+  }
+
   // Activity generator — fires every 6–14 s
   useEffect(() => {
     let timer
@@ -443,6 +500,7 @@ export default function App() {
       if (act) {
         setActivities(prev => [act, ...prev].slice(0, 30))
         postActivityToBackend(act)
+        if (act.gather === 'campfire') triggerCampfireGather(act.participants)
       }
       timer = setTimeout(fire, 6000 + Math.random() * 8000)
     }
@@ -482,7 +540,44 @@ export default function App() {
         const next = {}
         for (const [id, pos] of Object.entries(prev)) {
           let { x, y, vx, vy } = pos
-          // Randomly pick a new direction
+
+          // If gathered at campfire, move toward assigned spot
+          const target = gatheredPositionsRef.current[id]
+          if (target) {
+            const dx = target.x - x
+            const dy = target.y - y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            if (dist > 3) {
+              const speed = Math.min(dist * 0.12, 7)
+              x += (dx / dist) * speed
+              y += (dy / dist) * speed
+            } else {
+              x = target.x
+              y = target.y
+            }
+            next[id] = { x, y, vx: 0, vy: 0 }
+            continue
+          }
+
+          // If hanging around camp, home toward their camp spot
+          const campTarget = campHangersRef.current[id]
+          if (campTarget) {
+            const dx = campTarget.x - x
+            const dy = campTarget.y - y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            if (dist > 3) {
+              const speed = Math.min(dist * 0.12, 7)
+              x += (dx / dist) * speed
+              y += (dy / dist) * speed
+            } else {
+              x = campTarget.x
+              y = campTarget.y
+            }
+            next[id] = { x, y, vx: 0, vy: 0 }
+            continue
+          }
+
+          // Normal wandering
           if (Math.random() < 0.02) {
             const { vx: nvx, vy: nvy } = randomVelocity()
             vx = nvx; vy = nvy
@@ -493,7 +588,7 @@ export default function App() {
           if (x < 20)           { x = 20;           const v = randomVelocity(); vx = Math.abs(v.vx);  vy = v.vy }
           if (x > WORLD_W - 20) { x = WORLD_W - 20; const v = randomVelocity(); vx = -Math.abs(v.vx); vy = v.vy }
           if (y < 20)           { y = 20;            const v = randomVelocity(); vy = Math.abs(v.vy);  vx = v.vx }
-          if (y > WORLD_H - 20) { y = WORLD_H - 20;  const v = randomVelocity(); vy = -Math.abs(v.vy); vx = v.vx }
+          if (y > WORLD_H - 20) { y = WORLD_H - 20; const v = randomVelocity(); vy = -Math.abs(v.vy); vx = v.vx }
           next[id] = { x, y, vx, vy }
         }
         return next
@@ -732,6 +827,14 @@ export default function App() {
                   />
                 ))
               )}
+
+              {/*Camp — fixed at world centre*/}
+              <div className="camp-container" style={{ left: CAMP_X, top: CAMP_Y }}>
+                <img src="/land/campground.png" alt="" className="camp-ground" draggable={false} />
+                <img src="/land/leftTent.gif"   alt="" className="camp-tent camp-tent-left" draggable={false} />
+                <img src="/land/rightTent.gif"  alt="" className="camp-tent camp-tent-right" draggable={false} />
+                <img src="/land/campfire.gif"   alt="" className="camp-campfire" draggable={false} />
+              </div>
 
               {/*Jit sprites*/}
               {jits.map(jit => {
