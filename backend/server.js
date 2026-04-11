@@ -3,7 +3,10 @@ import express from 'express'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
-import { createClient } from '@supabase/supabase-js'
+
+import tamagotchisRouter from './routes/tamagotchis.js'
+import activitiesRouter from './routes/activities.js'
+import uploadRouter from './routes/upload.js'
 
 const app = express()
 const httpServer = createServer(app)
@@ -11,13 +14,19 @@ const io = new Server(httpServer, {
   cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
 })
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY)
-
 app.use(cors({ origin: 'http://localhost:5173' }))
 app.use(express.json())
 
+// Attach io to every request so routes can broadcast
+app.use((req, _res, next) => { req.io = io; next() })
+
+// Routes
+app.use('/api/tamagotchis', tamagotchisRouter)
+app.use('/api/activities', activitiesRouter)
+app.use('/api/upload', uploadRouter)
+
 // Health check
-app.get('/', (req, res) => res.json({ status: 'ok' }))
+app.get('/', (_req, res) => res.json({ status: 'ok' }))
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id)
