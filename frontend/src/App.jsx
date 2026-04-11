@@ -119,6 +119,13 @@ export default function App() {
   // Music player
   const [musicOpen, setMusicOpen] = useState(false)
   const [musicWinPos, setMusicWinPos] = useState({ x: 400, y: 300 })
+
+  // Printer / PNG export
+  const [printerOpen, setPrinterOpen] = useState(false)
+  const [printerWinPos, setPrinterWinPos] = useState({ x: 200, y: 200 })
+  const [printerJitName, setPrinterJitName] = useState('')
+  const [printerStatus, setPrinterStatus] = useState('')
+  const [printerSuggestions, setPrinterSuggestions] = useState(null)
   const [trackIdx, setTrackIdx] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(0.7)
@@ -163,6 +170,43 @@ export default function App() {
     setFaceIdx(Math.floor(Math.random() * FACES.length))
     setNeckIdx(Math.floor(Math.random() * NECKS.length))
     setBodyIdx(Math.floor(Math.random() * BODIES.length))
+  }
+
+  async function savePrinterPng() {
+    const name = printerJitName.trim()
+    if (!name) { setPrinterStatus('Enter a JIT name first.'); return }
+    const jit = jits.find(j => j.name.toLowerCase() === name.toLowerCase())
+    if (!jit) { setPrinterStatus(`No JIT named "${name}" found.`); return }
+
+    setPrinterStatus('Generating...')
+    const SIZE = 256
+    const canvas = document.createElement('canvas')
+    canvas.width = SIZE
+    canvas.height = SIZE
+    const ctx = canvas.getContext('2d')
+
+    const loadImg = url => new Promise((resolve, reject) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = url
+    })
+
+    try {
+      const layers = [jit.body_url, jit.neck_url, jit.face_url, jit.hat_url].filter(Boolean)
+      for (const url of layers) {
+        const img = await loadImg(url)
+        ctx.drawImage(img, 0, 0, SIZE, SIZE)
+      }
+      const link = document.createElement('a')
+      link.download = `${jit.name}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      setPrinterStatus(`Saved ${jit.name}.png!`)
+    } catch {
+      setPrinterStatus('Failed to load sprite images.')
+    }
   }
 
   // Live clock
@@ -401,6 +445,26 @@ export default function App() {
       })
       .slice(0, 6)
     setSearchResults(matches)
+  }
+
+  function onPrinterNameChange(e) {
+    const q = e.target.value
+    setPrinterJitName(q)
+    setPrinterStatus('')
+    if (!q.trim()) { setPrinterSuggestions(null); return }
+    const lower = q.trim().toLowerCase()
+    const matches = jits
+      .filter(j => j.name.toLowerCase().includes(lower))
+      .sort((a, b) => {
+        const al = a.name.toLowerCase(), bl = b.name.toLowerCase()
+        if (al === lower) return -1
+        if (bl === lower) return 1
+        if (al.startsWith(lower) && !bl.startsWith(lower)) return -1
+        if (!al.startsWith(lower) && bl.startsWith(lower)) return 1
+        return al.localeCompare(bl)
+      })
+      .slice(0, 6)
+    setPrinterSuggestions(matches)
   }
 
   function handleSearch(e) {
@@ -843,6 +907,54 @@ export default function App() {
         </Window>
       )}
 
+      {/* ── Printer / PNG Export ── */}
+      {printerOpen && (
+        <Window
+          title="PRINT.exe"
+          onClose={() => { setPrinterOpen(false); setPrinterStatus(''); setPrinterSuggestions(null) }}
+          className="printer-win"
+          defaultX={printerWinPos.x}
+          defaultY={printerWinPos.y}
+        >
+          <div className="printer-content">
+            <div className="printer-label w95-inset-box">
+              <div className="printer-header-text">JIT PHOTO PRINTER</div>
+              <div className="printer-sub-text">Enter a JIT name to save its sprite as a PNG file.</div>
+            </div>
+            <div className="printer-input-row">
+              <input
+                className="printer-input w95-inset-box"
+                type="text"
+                placeholder="JIT name..."
+                value={printerJitName}
+                onChange={onPrinterNameChange}
+                onKeyDown={e => { if (e.key === 'Enter') savePrinterPng() }}
+              />
+            </div>
+            {printerSuggestions && printerSuggestions.length > 0 && (
+              <div className="w95-inset-box printer-suggestions">
+                {printerSuggestions.map(jit => (
+                  <div
+                    key={jit.id}
+                    className="search-result-row"
+                    onClick={() => { setPrinterJitName(jit.name); setPrinterSuggestions(null); setPrinterStatus('') }}
+                  >
+                    <span className="feed-bullet">▪</span>
+                    <span>{jit.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button className="w95-btn printer-save-btn" onClick={savePrinterPng}>
+              SAVE PNG
+            </button>
+            {printerStatus && (
+              <div className="printer-status">{printerStatus}</div>
+            )}
+          </div>
+        </Window>
+      )}
+
       {/* Persistent audio element — always mounted so music survives window close */}
       <audio
         ref={audioRef}
@@ -858,7 +970,13 @@ export default function App() {
             <img src={IMG_TB_HOME} alt="home" className="tb-img" />
           </button>
           <div className="tb-sep" />
-          <button className="tb-icon-btn" title="Print">
+          <button className="tb-icon-btn" title="Print" onClick={() => {
+            if (!printerOpen) {
+              setPrinterWinPos({ x: Math.max(10, window.innerWidth / 2 - 130), y: Math.max(10, window.innerHeight - 280) })
+              setPrinterStatus('')
+            }
+            setPrinterOpen(v => !v)
+          }}>
             <img src={IMG_TB_PRINTER} alt="print" className="tb-img" />
           </button>
           <button className="tb-icon-btn" title="Favicon">

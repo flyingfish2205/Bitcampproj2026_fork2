@@ -811,6 +811,82 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
+   PRINTER / PNG EXPORT
+═══════════════════════════════════════════════════════ */
+.printer-win {
+  width: 260px;
+  z-index: 150;
+}
+
+.printer-content {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.printer-label {
+  padding: 6px 8px;
+}
+
+.printer-header-text {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 17px;
+  color: #000;
+  letter-spacing: 1px;
+}
+
+.printer-sub-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  color: #555;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.printer-input-row {
+  display: flex;
+  gap: 4px;
+}
+
+.printer-input {
+  flex: 1;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  padding: 3px 5px;
+  border: none;
+  outline: none;
+  background: #fff;
+  color: #000;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.printer-suggestions {
+  max-height: 120px;
+  overflow-y: auto;
+  background: #fff;
+  margin-bottom: 4px;
+}
+
+.printer-save-btn {
+  width: 100%;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 4px 0;
+}
+
+.printer-status {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  color: #0303a0;
+  text-align: center;
+  min-height: 14px;
+  padding: 2px 4px;
+}
+
+/* ═══════════════════════════════════════════════════════
    INTRO ANIMATION
 ═══════════════════════════════════════════════════════ */
 .intro-cursor {
