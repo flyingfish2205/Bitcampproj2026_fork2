@@ -4,7 +4,7 @@ import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001'
 
-// ── World constants ──────────────────────────────────────────────────────────
+//World constants
 const WORLD_COLS = 12
 const WORLD_ROWS = 10
 const TILE_SIZE  = 500
@@ -25,7 +25,7 @@ const IMG_TB_MUSIC     = '/figma-assets/tb-music.png'
 const IMG_SEARCH_GLASS = '/figma-assets/search-glass.png'
 const IMG_CLOSE        = '/figma-assets/close.png'
 
-// Music tracks
+//Music tracks
 const TRACKS = [
   { file: 'A L E X - Ghosts - 8bitpixel lofi beatchillhop.mp3',       label: 'A L E X - Ghosts' },
   { file: 'Midnight Bounce - Lakey Inspired 8bit pixel lo - fi.mp3',   label: 'Midnight Bounce' },
@@ -157,7 +157,7 @@ export default function App() {
   const cameraInitialized = useRef(false)
   const jitPositionsRef = useRef({})
 
-  // Stable random tilemap — generated once
+  // random tilemap generation
   const tilemap = useMemo(() =>
     Array.from({ length: WORLD_ROWS }, () =>
       Array.from({ length: WORLD_COLS }, () =>
@@ -214,7 +214,7 @@ export default function App() {
     }
   }
 
-  // Live clock
+  //clock
   useEffect(() => {
     const tick = () => {
       const d = new Date()
@@ -229,7 +229,7 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
-  // Audio: load new track whenever trackIdx changes
+  // change track whenever trackIdx changes
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -239,7 +239,7 @@ export default function App() {
     if (isPlaying) audio.play().catch(() => {})
   }, [trackIdx]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Audio: sync play/pause
+  //play/pause music
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -247,7 +247,7 @@ export default function App() {
     else audio.pause()
   }, [isPlaying])
 
-  // Audio: sync volume
+  // sync volume
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume
   }, [volume])
@@ -279,7 +279,7 @@ export default function App() {
     return () => [t1, t2, t3, t4].forEach(clearTimeout)
   }, [started])
 
-  // Socket.io — real-time activity feed + new JIT broadcasts
+  // Socket.io — real-time activity feed + new jit broadcasts
   useEffect(() => {
     const socket = io(API_BASE)
     socket.on('new_activity', activity => {
@@ -291,7 +291,7 @@ export default function App() {
     return () => socket.disconnect()
   }, [])
 
-  // Fetch data + center camera on first open
+  //Fetch data + center camera on first open
   useEffect(() => {
     if (activeWindow === 'jitcamp' || activeWindow === 'search') {
       fetchJits()
@@ -322,7 +322,7 @@ export default function App() {
     return { vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed }
   }
 
-  // Initialize JIT positions in world-pixel coordinates
+  //Initialize positions in world coordinates
   useEffect(() => {
     setJitPositions(prev => {
       const next = { ...prev }
@@ -340,7 +340,7 @@ export default function App() {
     })
   }, [jits])
 
-  // Movement animation — runs only while JIT_CAMP is visible
+  // Movement animation — runs only while JIT_CAMP is in camera frame
   useEffect(() => {
     if (activeWindow !== 'jitcamp' && activeWindow !== 'search') return
     const interval = setInterval(() => {
@@ -484,7 +484,7 @@ export default function App() {
     const pos = jitPositionsRef.current[jit.id]
     const cam = cameraRef.current
     const rect = viewportRef.current?.getBoundingClientRect()
-    // World → screen coordinates
+    // World --> screen coordinates
     const sx = rect ? rect.left + pos.x + cam.x : 400
     const sy = rect ? rect.top  + pos.y + cam.y : 300
     // Position window above the sprite; clamp so it stays on screen
@@ -551,7 +551,7 @@ export default function App() {
       }}
     >
 
-      {/* ── Desktop Icons ── */}
+      {/*Desktop Icons*/}
       <div className="desktop-icons">
         <button className="desktop-icon" onClick={() => open('search')}>
           <div className="icon-img"><img src={IMG_ICON_SEARCH} alt="Search" /></div>
@@ -567,7 +567,7 @@ export default function App() {
         </button>
       </div>
 
-      {/* ── JIT_CAMP.exe ── */}
+      {/*JIT_CAMP.exe*/}
       {(activeWindow === 'jitcamp' || activeWindow === 'search') && (
         <Window
           title="JIT_CAMP.exe"
@@ -581,12 +581,12 @@ export default function App() {
             ref={viewportRef}
             onMouseDown={onViewportMouseDown}
           >
-            {/* ── Scrollable world ── */}
+            {/*Scrollable world*/}
             <div
               className="jitcamp-world"
               style={{ transform: `translate(${camera.x}px, ${camera.y}px)` }}
             >
-              {/* Terrain tiles */}
+              {/*Terrain tiles*/}
               {tilemap.map((row, ry) =>
                 row.map((tile, cx) => (
                   <img
@@ -600,7 +600,7 @@ export default function App() {
                 ))
               )}
 
-              {/* JIT sprites */}
+              {/*Jit sprites*/}
               {jits.map(jit => {
                 const pos = jitPositions[jit.id]
                 if (!pos) return null
@@ -625,7 +625,7 @@ export default function App() {
               })}
             </div>
 
-            {/* ── Activity feed — fixed to viewport bottom-left ── */}
+            {/*Activity feed — fixed to viewport bottom-left*/}
             <div className="feed-box">
               {activities.length === 0 ? (
                 <div className="w95-empty">No activities yet.</div>
@@ -639,7 +639,7 @@ export default function App() {
               )}
             </div>
 
-            {/* ── Search overlay — fixed to viewport top-left ── */}
+            {/*Search overlay — fixed to viewport top-left*/}
             {activeWindow === 'search' && (
               <div className="search-overlay">
                 <form onSubmit={handleSearch} className="search-bar-row">
@@ -675,7 +675,7 @@ export default function App() {
         </Window>
       )}
 
-      {/* ── JIT_CREATOR.exe ── */}
+      {/*JIT_CREATOR.exe*/}
       {activeWindow === 'creator' && (
         <Window
           title="JIT_CREATOR.exe"
@@ -685,7 +685,7 @@ export default function App() {
           defaultY={45}
         >
           <div className="creator-layout">
-            {/* Left arrows: cycle each layer backward */}
+            {/*Left arrows: cycle each layer backward*/}
             <div className="avatar-col">
               {[
                 [setHatIdx,  HATS,  'hat',  true],
@@ -705,7 +705,7 @@ export default function App() {
             </div>
 
             <div className="creator-center">
-              {/* Layered avatar preview */}
+              {/*Layered avatar preview*/}
               <div className="creator-mascot">
                 <div className="avatar-composition">
                   <img src={`/jitbody/${BODIES[bodyIdx]}`} alt="" className="avatar-layer" />
@@ -733,7 +733,7 @@ export default function App() {
               </button>
             </div>
 
-            {/* Right arrows: cycle each layer forward */}
+            {/*Right arrows: cycle each layer forward*/}
             <div className="avatar-col avatar-col-right">
               {[
                 [setHatIdx,  HATS,  'hat',  true],
@@ -755,7 +755,7 @@ export default function App() {
         </Window>
       )}
 
-      {/* ── Click-to-start splash ── */}
+      {/*Click-to-start splash*/}
       {!started && (
         <div className="splash-overlay" onClick={() => setStarted(true)}>
           <div className="splash-dialog">
@@ -770,7 +770,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Intro cursor overlay ── */}
+      {/*Intro cursor overlay*/}
       {introPhase !== 'done' && (
         <img
           src="/cursor.png"
@@ -787,7 +787,7 @@ export default function App() {
         />
       )}
 
-      {/* ── JIT Profile Window ── */}
+      {/*JIT Profile Window*/}
       {profileData && (
         <Window
           key={profileData.jit.id}
@@ -798,7 +798,7 @@ export default function App() {
           defaultY={profileData.y}
         >
           <div className="profile-content">
-            {/* Header: mini avatar + name + best friend */}
+            {/*Header: mini avatar + name + best friend*/}
             <div className="profile-header">
               <div className="profile-avatar-mini">
                 {profileData.jit.body_url && <img src={profileData.jit.body_url} alt="" className="profile-avatar-layer" />}
@@ -814,7 +814,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Activity log */}
+            {/*Activity log*/}
             <div className="profile-log-label">Activity Log</div>
             <div className="w95-inset-box profile-log">
               {profileData.activities.length === 0 ? (
@@ -832,7 +832,7 @@ export default function App() {
         </Window>
       )}
 
-      {/* ── Music Player ── */}
+      {/*Music Player*/}
       {musicOpen && (
         <Window
           title="MUSIC.exe"
@@ -842,14 +842,14 @@ export default function App() {
           defaultY={musicWinPos.y}
         >
           <div className="music-content">
-            {/* Now playing */}
+            {/*Now playing*/}
             <div className="music-now-playing w95-inset-box">
               <div className="music-np-label">NOW PLAYING</div>
               <div className="music-np-track">{TRACKS[trackIdx].label}</div>
               <div className="music-np-time">{fmtTime(currentTime)} / {fmtTime(duration)}</div>
             </div>
 
-            {/* Seek bar */}
+            {/*Seek bar*/}
             <input
               type="range"
               className="music-seek"
@@ -864,7 +864,7 @@ export default function App() {
               }}
             />
 
-            {/* Track list */}
+            {/*Track list*/}
             <div className="music-tracklist w95-inset-box">
               {TRACKS.map((t, i) => (
                 <div
@@ -878,7 +878,7 @@ export default function App() {
               ))}
             </div>
 
-            {/* Transport + volume */}
+            {/*Transport + volume*/}
             <div className="music-controls">
               <button
                 className="w95-btn music-ctrl-btn"
@@ -912,7 +912,7 @@ export default function App() {
         </Window>
       )}
 
-      {/* ── Printer / PNG Export ── */}
+      {/*Printer / PNG Export*/}
       {printerOpen && (
         <Window
           title="PRINT.exe"
@@ -960,7 +960,7 @@ export default function App() {
         </Window>
       )}
 
-      {/* ── JIT Directory ── */}
+      {/*JIT Directory*/}
       {directoryOpen && (
         <Window
           title="DIRECTORY.exe"
@@ -1016,7 +1016,7 @@ export default function App() {
         onEnded={() => setTrackIdx(i => (i + 1) % TRACKS.length)}
       />
 
-      {/* ── Taskbar ── */}
+      {/*Taskbar*/}
       <div className="taskbar">
         <div className="taskbar-left">
           <button className="tb-icon-btn" data-label="Home" title="Home" onClick={() => {
