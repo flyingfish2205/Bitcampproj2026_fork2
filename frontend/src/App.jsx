@@ -1019,7 +1019,12 @@ export default function App() {
       {/* ── Taskbar ── */}
       <div className="taskbar">
         <div className="taskbar-left">
-          <button className="tb-icon-btn" data-label="Home" title="Home">
+          <button className="tb-icon-btn" data-label="Home" title="Home" onClick={() => {
+            setActiveWindow(null)
+            setMusicOpen(false)
+            setPrinterOpen(false)
+            setDirectoryOpen(false)
+          }}>
             <img src={IMG_TB_HOME} alt="home" className="tb-img" />
           </button>
           <div className="tb-sep" />
