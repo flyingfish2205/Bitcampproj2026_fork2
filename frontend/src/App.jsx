@@ -1030,7 +1030,7 @@ export default function App() {
           <div className="tb-sep" />
           <button className="tb-icon-btn" data-label="Print" title="Print" onClick={() => {
             if (!printerOpen) {
-              setPrinterWinPos({ x: Math.max(10, window.innerWidth / 2 - 130), y: Math.max(10, window.innerHeight - 280) })
+              setPrinterWinPos({ x: Math.max(10, window.innerWidth / 2 - 410), y: Math.max(10, window.innerHeight - 280) })
               setPrinterStatus('')
             }
             setPrinterOpen(v => !v)
