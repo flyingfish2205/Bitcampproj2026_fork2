@@ -258,19 +258,20 @@ body {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 260px;
-  max-height: 148px;
+  width: 420px;
+  max-height: 300px;
   background: rgba(0, 0, 0, 0.35);
   border: none;
   overflow-y: auto;
   z-index: 5;
-  padding: 5px 8px;
+  padding: 8px 12px;
   min-height: auto;
 }
 
 .jitcamp-content-wrapper .feed-row {
   color: #fff;
   border-bottom-color: rgba(255, 255, 255, 0.2);
+  font-size: 17px;
 }
 
 .jitcamp-content-wrapper .feed-bullet {
@@ -1110,4 +1111,110 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIVITY FEED — clickable rows
+═══════════════════════════════════════════════════════ */
+.feed-row-clickable {
+  cursor: pointer;
+}
+
+.feed-row-clickable:hover {
+  background: rgba(0, 0, 140, 0.08);
+}
+
+.feed-camera {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════
+   POLAROID VIEWER
+═══════════════════════════════════════════════════════ */
+.polaroid-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.polaroid-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.polaroid-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  background: #b4b4b4;
+  border-top: 2px solid #fff;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #7a7a7a;
+  border-right: 2px solid #7a7a7a;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 0;
+}
+
+.polaroid-close:active {
+  border-top: 2px solid #7a7a7a;
+  border-left: 2px solid #7a7a7a;
+  border-bottom: 2px solid #fff;
+  border-right: 2px solid #fff;
+}
+
+.polaroid-frame {
+  position: relative;
+  width: 340px;
+}
+
+.polaroid-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.polaroid-jits {
+  position: absolute;
+  /* sit in the lower photo area, above the thick white bottom border */
+  bottom: 22%;
+  left: 8%;
+  right: 8%;
+  height: 55%;
+  pointer-events: none;
+}
+
+.polaroid-jit-sprite {
+  position: absolute;
+  bottom: 0;
+  width: 72px;
+  height: 72px;
+  transform: translateX(-50%);
+}
+
+.polaroid-caption {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  color: #fff;
+  text-align: center;
+  max-width: 340px;
+  line-height: 1.5;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }

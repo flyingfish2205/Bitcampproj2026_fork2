@@ -52,7 +52,7 @@ router.get('/:id/activities', async (req, res) => {
 
   const { data, error } = await supabase
     .from('activities')
-    .select('*, tama_a:tama_a_id(id, name), tama_b:tama_b_id(id, name)')
+    .select('*, tama_a:tama_a_id(id, name, body_url, neck_url, face_url, hat_url), tama_b:tama_b_id(id, name, body_url, neck_url, face_url, hat_url)')
     .or(`tama_a_id.eq.${id},tama_b_id.eq.${id}`)
     .order('created_at', { ascending: false })
 

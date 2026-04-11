@@ -65,6 +65,79 @@ const BODIES = [
   'chubby.png','normal.png','skinny.png',
 ]
 
+// ── Activity system ──────────────────────────────────────────────────────────
+
+// Group backend activity rows by description, merging participants across all
+// pairwise rows that share the same description (group activities are stored as
+// one row per pair, so this reconstructs the full participant list).
+function mergeBackendActivities(activities) {
+  const order = []
+  const map = new Map() // description -> { rep, participantMap }
+  for (const a of activities) {
+    const key = a.description
+    if (!map.has(key)) {
+      map.set(key, { rep: a, participantMap: new Map() })
+      order.push(key)
+    }
+    const entry = map.get(key)
+    if (a.tama_a) entry.participantMap.set(a.tama_a.id, a.tama_a)
+    if (a.tama_b) entry.participantMap.set(a.tama_b.id, a.tama_b)
+  }
+  return order.map(key => {
+    const { rep, participantMap } = map.get(key)
+    const participants = [...participantMap.values()]
+    const polaroid = rep.activity_image_url || null
+    return { ...rep, participants, polaroid }
+  })
+}
+
+function listNames(ps) {
+  if (ps.length === 1) return ps[0].name
+  if (ps.length === 2) return `${ps[0].name} and ${ps[1].name}`
+  return ps.slice(0, -1).map(j => j.name).join(', ') + ', and ' + ps[ps.length - 1].name
+}
+
+const ACTIVITY_DEFS = [
+  // Solo
+  { type: 'solo', polaroid: '/polaroids/Chairs_Polaroid.png',    text: p => `${p[0].name} is sitting and enjoying the sun` },
+  { type: 'solo', polaroid: '/polaroids/Bench_Polaroid.png',     text: p => `${p[0].name} is enjoying a snack on the bench` },
+  { type: 'solo', polaroid: '/polaroids/Fishing_Polaroid.png',   text: p => `${p[0].name} is going fishing` },
+  { type: 'solo', polaroid: '/polaroids/Flowers_Polaroid.png',   text: p => `${p[0].name} is sitting and smelling the flowers` },
+  { type: 'solo', polaroid: '/polaroids/Beach_Polaroid.png',     text: p => `${p[0].name} sits by the lake` },
+  // One-on-one
+  { type: 'pair', polaroid: '/polaroids/Beach_Polaroid.png',           text: p => `${p[0].name} and ${p[1].name} are hanging out by the lake` },
+  { type: 'pair', polaroid: '/polaroids/Picnic_Table_Polaroid.png',    text: p => `${p[0].name} and ${p[1].name} are going on a picnic` },
+  { type: 'pair', polaroid: '/polaroids/Table_Polaroid.png',           text: p => `${p[0].name} and ${p[1].name} are having a nice chat` },
+  { type: 'pair', polaroid: '/polaroids/Flowers_Polaroid.png',         text: p => `${p[0].name} and ${p[1].name} are hanging out by the flowers` },
+  { type: 'pair', polaroid: '/polaroids/Beach_Polaroid.png',           text: p => `${p[0].name} and ${p[1].name} are skipping rocks together` },
+  // Group
+  { type: 'group', polaroid: '/polaroids/Campfire_Polaroid.png',       text: p => `${listNames(p)} are making smores together` },
+  { type: 'group', polaroid: '/polaroids/Beach_Polaroid.png',          text: p => `${listNames(p)} are having a beach day` },
+  { type: 'group', polaroid: '/polaroids/Picnic_Table_Polaroid.png',   text: p => `${listNames(p)} are having a group picnic` },
+  { type: 'group', polaroid: '/polaroids/Fishing_Polaroid.png',        text: p => `${listNames(p)} are fishing together` },
+]
+
+function pickRandom(arr, n) {
+  return [...arr].sort(() => Math.random() - 0.5).slice(0, n)
+}
+
+function buildActivity(jits) {
+  if (!jits.length) return null
+  const def = ACTIVITY_DEFS[Math.floor(Math.random() * ACTIVITY_DEFS.length)]
+  let count
+  if (def.type === 'solo')       count = 1
+  else if (def.type === 'pair')  count = 2
+  else                           count = 3 + Math.floor(Math.random() * 3) // 3–5
+  if (jits.length < count) return null
+  const participants = pickRandom(jits, count)
+  return {
+    id: `local-${Date.now()}-${Math.random()}`,
+    description: def.text(participants),
+    polaroid: def.polaroid,
+    participants,
+  }
+}
+
 function Window({ title, onClose, className = '', children, defaultX = 200, defaultY = 60 }) {
   const [pos, setPos] = useState({ x: defaultX, y: defaultY })
   const dragging = useRef(false)
@@ -144,6 +217,11 @@ export default function App() {
   const [cursorStart, setCursorStart] = useState({ x: 0, y: 0 })
   const [iconCenter, setIconCenter] = useState({ x: 0, y: 0 })
   const jitsIconRef = useRef(null)
+  const jitsRef = useRef([])
+  const pendingEchoesRef = useRef({})
+
+  // Polaroid viewer
+  const [polaroidActivity, setPolaroidActivity] = useState(null)
 
   // Avatar layer indices (-1 = none for optional layers)
   const [hatIdx, setHatIdx] = useState(-1)
@@ -283,6 +361,12 @@ export default function App() {
   useEffect(() => {
     const socket = io(API_BASE)
     socket.on('new_activity', activity => {
+      const pending = pendingEchoesRef.current
+      if (pending[activity.description] > 0) {
+        pending[activity.description]--
+        if (pending[activity.description] === 0) delete pending[activity.description]
+        return // already added locally; skip the echo
+      }
       setActivities(prev => [activity, ...prev].slice(0, 30))
     })
     socket.on('jit_created', jit => {
@@ -315,9 +399,55 @@ export default function App() {
   // Keep refs in sync for use in async callbacks / event handlers
   useEffect(() => { jitPositionsRef.current = jitPositions }, [jitPositions])
   useEffect(() => { cameraRef.current = camera }, [camera])
+  useEffect(() => { jitsRef.current = jits }, [jits])
   useEffect(() => {
     if (activeWindow !== 'jitcamp' && activeWindow !== 'search') setProfileData(null)
   }, [activeWindow])
+
+  // Post multi-participant activities to the backend as pairwise records so
+  // personal logs and best-friend calculations stay up to date.
+  async function postActivityToBackend(act) {
+    if (act.participants.length < 2) return
+    const pairs = []
+    for (let i = 0; i < act.participants.length; i++)
+      for (let j = i + 1; j < act.participants.length; j++)
+        pairs.push([act.participants[i], act.participants[j]])
+
+    // Reserve slots so the socket echoes are suppressed on this client
+    pendingEchoesRef.current[act.description] =
+      (pendingEchoesRef.current[act.description] || 0) + pairs.length
+    setTimeout(() => { delete pendingEchoesRef.current[act.description] }, 8000)
+
+    for (const [a, b] of pairs) {
+      try {
+        await fetch(`${API_BASE}/api/activities`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tama_a_id: a.id,
+            tama_b_id: b.id,
+            description: act.description,
+            activity_image_url: act.polaroid,
+          }),
+        })
+      } catch { /* non-critical, local feed already updated */ }
+    }
+  }
+
+  // Activity generator — fires every 6–14 s
+  useEffect(() => {
+    let timer
+    const fire = () => {
+      const act = buildActivity(jitsRef.current)
+      if (act) {
+        setActivities(prev => [act, ...prev].slice(0, 30))
+        postActivityToBackend(act)
+      }
+      timer = setTimeout(fire, 6000 + Math.random() * 8000)
+    }
+    timer = setTimeout(fire, 3000)
+    return () => clearTimeout(timer)
+  }, [])
 
   function randomVelocity() {
     const angle = Math.random() * Math.PI * 2
@@ -634,7 +764,11 @@ export default function App() {
                 <div className="w95-empty">No activities yet.</div>
               ) : (
                 activities.map(a => (
-                  <div key={a.id} className="feed-row">
+                  <div
+                    key={a.id}
+                    className={`feed-row${a.polaroid ? ' feed-row-clickable' : ''}`}
+                    onClick={() => a.polaroid && setPolaroidActivity(a)}
+                  >
                     <span className="feed-bullet">▪</span>
                     <span>{a.description}</span>
                   </div>
@@ -823,8 +957,12 @@ export default function App() {
               {profileData.activities.length === 0 ? (
                 <div className="w95-empty">No activities yet.</div>
               ) : (
-                profileData.activities.map(a => (
-                  <div key={a.id} className="feed-row">
+                mergeBackendActivities(profileData.activities).map(a => (
+                  <div
+                    key={a.id}
+                    className={`feed-row${a.polaroid ? ' feed-row-clickable' : ''}`}
+                    onClick={() => a.polaroid && setPolaroidActivity(a)}
+                  >
                     <span className="feed-bullet">▪</span>
                     <span>{a.description}</span>
                   </div>
@@ -1009,6 +1147,33 @@ export default function App() {
             </div>
           </div>
         </Window>
+      )}
+
+      {/* ── Polaroid Viewer ── */}
+      {polaroidActivity && (
+        <div className="polaroid-overlay" onClick={() => setPolaroidActivity(null)}>
+          <div className="polaroid-modal" onClick={e => e.stopPropagation()}>
+            <button className="polaroid-close" onClick={() => setPolaroidActivity(null)}>✕</button>
+            <div className="polaroid-frame">
+              <img src={polaroidActivity.polaroid} alt="" className="polaroid-img" />
+              <div className="polaroid-jits">
+                {polaroidActivity.participants.map((jit, i) => (
+                  <div
+                    key={jit.id}
+                    className="polaroid-jit-sprite"
+                    style={{ left: `${(i + 1) / (polaroidActivity.participants.length + 1) * 100}%` }}
+                  >
+                    {jit.body_url && <img src={jit.body_url} alt="" className="profile-avatar-layer" />}
+                    {jit.neck_url && <img src={jit.neck_url} alt="" className="profile-avatar-layer" />}
+                    {jit.face_url && <img src={jit.face_url} alt="" className="profile-avatar-layer" />}
+                    {jit.hat_url  && <img src={jit.hat_url}  alt="" className="profile-avatar-layer" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="polaroid-caption">{polaroidActivity.description}</div>
+          </div>
+        </div>
       )}
 
       {/* Persistent audio element — always mounted so music survives window close */}
