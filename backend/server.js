@@ -21,13 +21,11 @@ const io = new Server(httpServer, {
 app.use(cors({ origin: devOrigin }))
 */
 
-const allowedOrigin = /^http:\/\/localhost:\d+$|^https:\/\/frontend-production-cc9b\.up\.railway\.app$/
-
 const io = new Server(httpServer, {
-  cors: { origin: allowedOrigin, methods: ['GET', 'POST'] }
+  cors: { origin: true, methods: ['GET', 'POST'] }
 })
 
-app.use(cors({ origin: allowedOrigin }))
+app.use(cors({ origin: true }))
 
 app.use(express.json())
 
