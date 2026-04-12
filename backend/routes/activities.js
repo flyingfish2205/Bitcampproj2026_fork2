@@ -40,10 +40,10 @@ router.post('/', async (req, res) => {
   await updateBestFriend(tama_a_id)
   await updateBestFriend(tama_b_id)
 
-  // Fetch the full activity with tamagotchi names to broadcast
+  // Fetch the full activity with tamagotchi data to broadcast
   const { data: fullActivity } = await supabase
     .from('activities')
-    .select('*, tama_a:tama_a_id(id, name), tama_b:tama_b_id(id, name)')
+    .select('*, tama_a:tama_a_id(id, name, body_url, neck_url, face_url, hat_url), tama_b:tama_b_id(id, name, body_url, neck_url, face_url, hat_url)')
     .eq('id', activity.id)
     .single()
 
