@@ -66,6 +66,7 @@ router.post('/', async (req, res) => {
   const { name, body_url, hat_url, face_url, neck_url, location_x, location_y } = req.body
 
   if (!name) return res.status(400).json({ error: 'name is required' })
+  if (name.trim().length > 18) return res.status(400).json({ error: 'Name must be 18 characters or fewer' })
 
   // Enforce unique names (case-insensitive)
   const { data: existing } = await supabase
