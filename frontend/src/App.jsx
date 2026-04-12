@@ -962,9 +962,10 @@ export default function App() {
                 <input
                   autoFocus
                   value={createName}
-                  onChange={e => setCreateName(e.target.value)}
+                  onChange={e => setCreateName(e.target.value.slice(0, 18))}
                   onKeyDown={e => e.key === 'Enter' && handleCreate(e)}
                   placeholder="Name your Jib!"
+                  maxLength={18}
                   className="creator-name-input"
                 />
                 <button className="creator-dice-btn" onClick={randomize} title="Randomize">
