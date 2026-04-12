@@ -375,7 +375,11 @@ export default function App() {
         if (pending[activity.description] === 0) delete pending[activity.description]
         return // already added locally; skip the echo
       }
-      const act = { ...activity, polaroid: activity.polaroid || activity.activity_image_url || null }
+      const act = { 
+        ...activity, 
+        polaroid: activity.polaroid || activity.activity_image_url || null,
+        participants: activity.participants || [activity.tama_a, activity.tama_b].filter(Boolean)
+      }
       setActivities(prev => {
         if (prev.some(p => p.description === act.description)) return prev
         return [act, ...prev].slice(0, 30)
@@ -1265,11 +1269,11 @@ export default function App() {
             <div className="polaroid-frame">
               <img src={polaroidActivity.polaroid} alt="" className="polaroid-img" />
               <div className="polaroid-jits">
-                {polaroidActivity.participants.map((jit, i) => (
+                {(polaroidActivity.participants || []).map((jit, i) => (
                   <div
                     key={jit.id}
                     className="polaroid-jit-sprite"
-                    style={{ left: `${(i + 1) / (polaroidActivity.participants.length + 1) * 100}%` }}
+                    style={{ left: `${(i + 1) / ((polaroidActivity.participants?.length || 0) + 1) * 100}%` }}
                   >
                     {jit.body_url && <img src={jit.body_url} alt="" className="profile-avatar-layer" />}
                     {jit.neck_url && <img src={jit.neck_url} alt="" className="profile-avatar-layer" />}
