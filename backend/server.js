@@ -11,13 +11,13 @@ import { supabase } from './lib/supabase.js'
 
 const app = express()
 const httpServer = createServer(app)
-const devOrigin = /^http:\/\/localhost:\d+$/
+const allowedOrigin = /^http:\/\/localhost:\d+$|^https:\/\/frontend-production-cc9b\.up\.railway\.app$/
 
 const io = new Server(httpServer, {
-  cors: { origin: devOrigin, methods: ['GET', 'POST'] }
+  cors: { origin: allowedOrigin, methods: ['GET', 'POST'] }
 })
 
-app.use(cors({ origin: devOrigin }))
+app.use(cors({ origin: allowedOrigin }))
 app.use(express.json())
 
 // Attach io to every request so routes can broadcast
