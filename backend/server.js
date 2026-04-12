@@ -13,18 +13,35 @@ const app = express()
 const httpServer = createServer(app)
 
 // Define allowed origins for CORS.
-// Includes localhost for dev and any .railway.app domain for production convenience.
-const allowedOrigin = [
-  /^http:\/\/localhost:\d+$/,
-  /\.railway\.app$/,
-  process.env.FRONTEND_URL
-].filter(Boolean)
+// A function is more reliable for matching Railway's dynamic subdomains.
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+    const isRailway = /\.railway\.app$/.test(origin);
+    const isEnvUrl = process.env.FRONTEND_URL && origin.startsWith(process.env.FRONTEND_URL);
+
+    if (isLocalhost || isRailway || isEnvUrl) {
+      callback(null, true);
+    } else {
+      // Log rejected origins to Railway logs to help debug deployment mismatches
+      console.warn(`CORS blocked for origin: ${origin}`);
+      callback(null, false);
+    }
+  },
+  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
 
 const io = new Server(httpServer, {
-  cors: { origin: allowedOrigin, methods: ['GET', 'POST'] }
+  cors: corsOptions,
+  transports: ['websocket', 'polling'] // Ensure WebSocket is prioritized
 })
 
-app.use(cors({ origin: allowedOrigin }))
+app.use(cors(corsOptions))
 
 app.use(express.json())
 
