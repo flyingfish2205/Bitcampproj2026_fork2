@@ -229,7 +229,7 @@ export default function App() {
   const campHangersRef = useRef({})
 
   // Polaroid viewer
-  const [polaroidActivity, setPolaroidActivity] = useState(null)
+  const [polaroidDesc, setPolaroidDesc] = useState(null)
 
   // Avatar layer indices (-1 = none for optional layers)
   const [hatIdx, setHatIdx] = useState(-1)
@@ -881,7 +881,7 @@ export default function App() {
                   <div
                     key={a.id}
                     className={`feed-row${a.polaroid ? ' feed-row-clickable' : ''}`}
-                    onClick={() => a.polaroid && setPolaroidActivity(a)}
+                    onClick={() => a.polaroid && setPolaroidDesc(a.description)}
                   >
                     <span className="feed-bullet">▪</span>
                     <span>{a.description}</span>
@@ -1076,7 +1076,7 @@ export default function App() {
                   <div
                     key={a.id}
                     className={`feed-row${a.polaroid ? ' feed-row-clickable' : ''}`}
-                    onClick={() => a.polaroid && setPolaroidActivity(a)}
+                    onClick={() => a.polaroid && setPolaroidDesc(a.description)}
                   >
                     <span className="feed-bullet">▪</span>
                     <span>{a.description}</span>
@@ -1265,31 +1265,35 @@ export default function App() {
       )}
 
       {/* ── Polaroid Viewer ── */}
-      {polaroidActivity && (
-        <div className="polaroid-overlay" onClick={() => setPolaroidActivity(null)}>
-          <div className="polaroid-modal" onClick={e => e.stopPropagation()}>
-            <button className="polaroid-close" onClick={() => setPolaroidActivity(null)}>✕</button>
-            <div className="polaroid-frame">
-              <img src={polaroidActivity.polaroid} alt="" className="polaroid-img" />
-              <div className="polaroid-jits">
-                {(polaroidActivity.participants || []).map((jit, i) => (
-                  <div
-                    key={jit.id}
-                    className="polaroid-jit-sprite"
-                    style={{ left: `${(i + 1) / ((polaroidActivity.participants?.length || 0) + 1) * 100}%` }}
-                  >
-                    {jit.body_url && <img src={jit.body_url} alt="" className="profile-avatar-layer" />}
-                    {jit.neck_url && <img src={jit.neck_url} alt="" className="profile-avatar-layer" />}
-                    {jit.face_url && <img src={jit.face_url} alt="" className="profile-avatar-layer" />}
-                    {jit.hat_url  && <img src={jit.hat_url}  alt="" className="profile-avatar-layer" />}
-                  </div>
-                ))}
+      {polaroidDesc && (() => {
+        const polaroidActivity = activities.find(a => a.description === polaroidDesc)
+        if (!polaroidActivity) return null
+        return (
+          <div className="polaroid-overlay" onClick={() => setPolaroidDesc(null)}>
+            <div className="polaroid-modal" onClick={e => e.stopPropagation()}>
+              <button className="polaroid-close" onClick={() => setPolaroidDesc(null)}>✕</button>
+              <div className="polaroid-frame">
+                <img src={polaroidActivity.polaroid} alt="" className="polaroid-img" />
+                <div className="polaroid-jits">
+                  {(polaroidActivity.participants || []).map((jit, i) => (
+                    <div
+                      key={jit.id}
+                      className="polaroid-jit-sprite"
+                      style={{ left: `${(i + 1) / ((polaroidActivity.participants?.length || 0) + 1) * 100}%` }}
+                    >
+                      {jit.body_url && <img src={jit.body_url} alt="" className="profile-avatar-layer" />}
+                      {jit.neck_url && <img src={jit.neck_url} alt="" className="profile-avatar-layer" />}
+                      {jit.face_url && <img src={jit.face_url} alt="" className="profile-avatar-layer" />}
+                      {jit.hat_url  && <img src={jit.hat_url}  alt="" className="profile-avatar-layer" />}
+                    </div>
+                  ))}
+                </div>
               </div>
+              <div className="polaroid-caption">{polaroidActivity.description}</div>
             </div>
-            <div className="polaroid-caption">{polaroidActivity.description}</div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Persistent audio element — always mounted so music survives window close */}
       <audio
