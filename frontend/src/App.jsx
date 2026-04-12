@@ -375,14 +375,17 @@ export default function App() {
         if (pending[activity.description] === 0) delete pending[activity.description]
         return // already added locally; skip the echo
       }
-      const act = { 
-        ...activity, 
-        polaroid: activity.polaroid || activity.activity_image_url || null,
-        participants: activity.participants || [activity.tama_a, activity.tama_b].filter(Boolean)
-      }
+      const newParticipants = [activity.tama_a, activity.tama_b].filter(Boolean)
+      const polaroid = activity.activity_image_url || null
       setActivities(prev => {
-        if (prev.some(p => p.description === act.description)) return prev
-        return [act, ...prev].slice(0, 30)
+        const existing = prev.find(p => p.description === activity.description)
+        if (existing) {
+          // Merge any new participants into the existing entry
+          const knownIds = new Set(existing.participants.map(p => p.id))
+          const merged = [...existing.participants, ...newParticipants.filter(p => !knownIds.has(p.id))]
+          return prev.map(p => p.description === activity.description ? { ...p, participants: merged } : p)
+        }
+        return [{ ...activity, polaroid, participants: newParticipants }, ...prev].slice(0, 30)
       })
     })
     socket.on('jit_created', jit => {
