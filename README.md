@@ -1,6 +1,6 @@
-# JIT Camp
+# JIB Camp
 
-A virtual campground where JITs (your characters) roam, hang out, and make memories together. Features a live activity feed, polaroid photo viewer, avatar creator, and a Windows 95-styled UI.
+A virtual campground where JIBs (your characters) roam, hang out, and make memories together. Features a live activity feed, polaroid photo viewer, avatar creator, and a Windows 95-styled UI.
 
 ## Project Structure
 
