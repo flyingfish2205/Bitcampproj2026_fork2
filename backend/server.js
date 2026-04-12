@@ -11,17 +11,14 @@ import { supabase } from './lib/supabase.js'
 
 const app = express()
 const httpServer = createServer(app)
-/*
-const devOrigin = /^http:\/\/localhost:\d+$/
 
-const io = new Server(httpServer, {
-  cors: { origin: devOrigin, methods: ['GET', 'POST'] }
-})
-
-app.use(cors({ origin: devOrigin }))
-*/
-
-const allowedOrigin = /^http:\/\/localhost:\d+$|^https:\/\/frontend-production-cc9b\.up\.railway\.app$/
+// Define allowed origins for CORS.
+// Includes localhost for dev and any .railway.app domain for production convenience.
+const allowedOrigin = [
+  /^http:\/\/localhost:\d+$/,
+  /\.railway\.app$/,
+  process.env.FRONTEND_URL
+].filter(Boolean)
 
 const io = new Server(httpServer, {
   cors: { origin: allowedOrigin, methods: ['GET', 'POST'] }
