@@ -22,8 +22,9 @@ const corsOptions = {
     const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
     const isRailway = /\.railway\.app$/.test(origin);
     const isEnvUrl = process.env.FRONTEND_URL && origin.startsWith(process.env.FRONTEND_URL);
+    const isCustomDomain = /jibcamp\.wiki$/.test(origin);
 
-    if (isLocalhost || isRailway || isEnvUrl) {
+    if (isLocalhost || isRailway || isEnvUrl || isCustomDomain) {
       callback(null, true);
     } else {
       // Log rejected origins to Railway logs to help debug deployment mismatches
