@@ -375,7 +375,11 @@ export default function App() {
         if (pending[activity.description] === 0) delete pending[activity.description]
         return // already added locally; skip the echo
       }
-      setActivities(prev => [activity, ...prev].slice(0, 30))
+      const act = { ...activity, polaroid: activity.polaroid || activity.activity_image_url || null }
+      setActivities(prev => {
+        if (prev.some(p => p.description === act.description)) return prev
+        return [act, ...prev].slice(0, 30)
+      })
     })
     socket.on('jit_created', jit => {
       setJits(prev => prev.find(j => j.id === jit.id) ? prev : [...prev, jit])
@@ -640,7 +644,7 @@ export default function App() {
     try {
       const res = await fetch(`${API_BASE}/api/activities?limit=25`)
       const data = await res.json()
-      setActivities(Array.isArray(data) ? data : [])
+      setActivities(Array.isArray(data) ? mergeBackendActivities(data) : [])
     } catch { setActivities([]) }
   }
 
