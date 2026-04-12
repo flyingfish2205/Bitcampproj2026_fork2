@@ -77,9 +77,13 @@ const BODIES = [
 // one row per pair, so this reconstructs the full participant list).
 function mergeBackendActivities(activities) {
   const order = []
-  const map = new Map() // description -> { rep, participantMap }
+  const map = new Map() // "description||minute" -> { rep, participantMap }
   for (const a of activities) {
-    const key = a.description
+    // Round to the minute so pairwise rows from the same event (created within
+    // seconds of each other) merge together, while the same activity happening
+    // on different occasions stays as separate entries.
+    const minute = a.created_at ? a.created_at.slice(0, 16) : ''
+    const key = `${a.description}||${minute}`
     if (!map.has(key)) {
       map.set(key, { rep: a, participantMap: new Map() })
       order.push(key)
@@ -229,7 +233,10 @@ export default function App() {
   const campHangersRef = useRef({})
 
   // Polaroid viewer
+  // polaroidDesc  — main feed: look up live from `activities` state so socket merges appear instantly
+  // polaroidObj   — profile log: store the full object directly (activity may not be in global feed)
   const [polaroidDesc, setPolaroidDesc] = useState(null)
+  const [polaroidObj,  setPolaroidObj]  = useState(null)
 
   // Avatar layer indices (-1 = none for optional layers)
   const [hatIdx, setHatIdx] = useState(-1)
@@ -1076,7 +1083,7 @@ export default function App() {
                   <div
                     key={a.id}
                     className={`feed-row${a.polaroid ? ' feed-row-clickable' : ''}`}
-                    onClick={() => a.polaroid && setPolaroidDesc(a.description)}
+                    onClick={() => a.polaroid && setPolaroidObj(a)}
                   >
                     <span className="feed-bullet">▪</span>
                     <span>{a.description}</span>
@@ -1265,13 +1272,15 @@ export default function App() {
       )}
 
       {/* ── Polaroid Viewer ── */}
-      {polaroidDesc && (() => {
-        const polaroidActivity = activities.find(a => a.description === polaroidDesc)
+      {(polaroidDesc || polaroidObj) && (() => {
+        const polaroidActivity =
+          polaroidObj ||
+          activities.find(a => a.description === polaroidDesc)
         if (!polaroidActivity) return null
         return (
-          <div className="polaroid-overlay" onClick={() => setPolaroidDesc(null)}>
+          <div className="polaroid-overlay" onClick={() => { setPolaroidDesc(null); setPolaroidObj(null) }}>
             <div className="polaroid-modal" onClick={e => e.stopPropagation()}>
-              <button className="polaroid-close" onClick={() => setPolaroidDesc(null)}>✕</button>
+              <button className="polaroid-close" onClick={() => { setPolaroidDesc(null); setPolaroidObj(null) }}>✕</button>
               <div className="polaroid-frame">
                 <img src={polaroidActivity.polaroid} alt="" className="polaroid-img" />
                 <div className="polaroid-jits">
